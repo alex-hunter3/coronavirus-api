@@ -24,6 +24,3 @@ def get_total_cases():
 	span = span.replace(' </span>', '')
 
 	return span
-
-
-print(get_total_cases())
