@@ -21,8 +21,8 @@ def write_file(countries):
 	file = open("countries.txt", "w")
 
 	for country in countries:
-		print("/" + country)
-		file.write("/" + str(country) + "\n")
+		print("/" + str(country)[8:])
+		file.write("/" + str(country)[8:] + "\n")
 
 	file.close()
 
