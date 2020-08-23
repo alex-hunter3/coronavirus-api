@@ -1,5 +1,5 @@
 # coronavirus-api
-A simple python flask api which will be able to get country specific data on the COVID-19 pandemic. Development in early stages of progress...
+A simple python flask api which will be able to get country specific data on the COVID-19 pandemic.
 
 See exmaple.py to see the functions that can be used to access country specfifc data.
 
