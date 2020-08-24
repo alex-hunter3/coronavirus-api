@@ -1,12 +1,10 @@
 from requests import get
+from bs4 import BeautifulSoup
 
 
 class Corona:
 	def __init__(self):
 		self.__countries = self.__get_countries()
-
-		# to be changed to webserver ip, for the now will only work on local machine with api.py running
-		self.__base_url  = "http://127.0.0.1:5000"
 
 	# private method to read in viable country requests
 	@staticmethod
@@ -16,9 +14,6 @@ class Corona:
 		file.close()
 
 		countries = countries.split("\n")
-
-		for country in range(len(countries)):
-			countries[country] = countries[country]
 
 		return countries
 
@@ -31,11 +26,84 @@ class Corona:
 
 		return countries
 
-	def get_url(self):
-		return self.__base_url
-
-
 api = Corona()
+
+
+def get_cases_by_country(country, page):
+    if country == "total":
+    	return get_total_cases(get_page())
+    else:
+    	try:
+    		return get_total_cases(page)
+    	except IndexError:
+    		return None
+
+
+def get_deaths_by_country(country, page):
+    try:
+    	return get_total_deaths(page)
+    except IndexError:
+    	return None
+
+
+def get_recoveries_by_country(country, page):
+	try:
+		return get_total_recoveries(page)
+	except IndexError:
+		return None
+
+
+def get_page():
+    return get("https://www.worldometers.info/coronavirus/").text
+
+
+def get_page_by_country(country):
+	return get(f"https://www.worldometers.info/coronavirus/country/{country.strip().lower()}").text
+
+
+def get_total_cases(page):
+	soup = BeautifulSoup(page, "html.parser")
+	divs = soup.findAll("div", {"class": "maincounter-number"})
+
+	span = divs[0].findAll("span")
+	span = str(span[0].text)
+
+	span = span.replace(",", "")
+
+	try:
+		return span.strip()
+	except AttributeError:
+		return span
+
+
+def get_total_deaths(page):
+	soup = BeautifulSoup(page, "html.parser")
+	divs = soup.findAll("div", {"class": "maincounter-number"})
+
+	span = divs[1].findAll("span")
+	span = str(span[0].text)
+
+	span = span.replace(",", "")
+
+	try:
+		return span.strip()
+	except AttributeError:
+		return span
+
+
+def get_total_recoveries(page):
+	soup = BeautifulSoup(page, "html.parser")
+	divs = soup.findAll("div", {"class": "maincounter-number"})
+
+	span = divs[2].findAll("span")
+	span = str(span[0].text)
+
+	span = span.replace(",", "")
+
+	try:
+		return span.strip()
+	except AttributeError:
+		return span
 
 
 def check_valid(country="total"):
@@ -54,14 +122,17 @@ def valid_countries():
 		print(country)
 
 
-# only function that needs to be used to collect data on any country on the worldometer website
-def get_country_data(country="/"):
-	country = country.replace("/", "").lower()
+def total_data():
+	page = get_page()
+	return [int(get_total_cases(page)), int(get_total_deaths(page)), int(get_total_recoveries(page))]
 
-	check = check_valid(country)
 
-	if not check:
-		raise AttributeError("INVALID COUNTRY NAME. To check if country is valid use function check_valid(country_to_check). To get list of valid countries use valid_countries() function.")
+def total_data_by_country(country):
+	page = get_page_by_country(country)
 
-	url = api.get_url() + "/" + country
-	return (get(url).text).split(",")
+	try:
+		return [int(get_cases_by_country(country, page)), int(get_deaths_by_country(country, page)),int(get_recoveries_by_country(country, page))]
+	except ValueError:
+		return [get_cases_by_country(country, page), get_deaths_by_country(country, page), get_recoveries_by_country(country, page)]
+	except AttributeError:
+		return [get_cases_by_country(country, page), get_deaths_by_country(country, page), get_recoveries_by_country(country, page)]
